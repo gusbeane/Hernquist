@@ -1,4 +1,13 @@
 import numpy as np
+from scipy.interpolate import interp1d
+from numba import njit
+from tqdm import tqdm
+
+try:
+    import arepo
+    HAVE_AREPO = True
+except ModuleNotFoundError:
+    HAVE_AREPO = False
 
 def rejection_sample(fn, maxval, N, xrng=[0, 1], overshoot=2., dtype=np.longdouble, fn_args={}):
     xwidth = xrng[1] - xrng[0]
@@ -359,6 +368,9 @@ class Hernquist(object):
         return np.transpose([vx, vy, vz])
 
     def gen_ics(self, N, fname):
+        if not HAVE_AREPO:
+            raise NotImplementedError("Requires the inspector_gadget module to make gadget/arepo ics")
+
         ics = arepo.ICs(fname, [0, N, 0, 0, 0, 0], masses=[0, self.M/N, 0, 0, 0, 0])
 
         pos = self.draw_coordinates(N)
